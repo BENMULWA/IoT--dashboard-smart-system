@@ -11,8 +11,8 @@ export default function StatCard({ title, value, status, color, animationDelay =
                 </div>
             )}
             
-            <p className='text-slate-400 text-sm'>{title}</p>
-            <h3 className='text-white text-3xl font-bold mt-2'>{value}</h3>
+            <p className='text-slate-400 text-xs sm:text-sm'>{title}</p>
+            <h3 className='text-white text-2xl sm:text-3xl font-bold mt-2'>{value}</h3>
             <p className={`mt-3 text-sm ${color} flex items-center gap-1`}>{status}</p>
         </div>
     )

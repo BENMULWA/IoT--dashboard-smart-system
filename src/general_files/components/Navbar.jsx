@@ -19,7 +19,7 @@ export default function Navbar() {
     <div className='bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col gap-4 lg:flex-row lg:justify-between lg:items-center relative'>
       <div>
         <ChartNoAxesCombined size={35} className='text-indigo-600' /> 
-              <h1 className='text-white text-4xl sm:text-3xl font-extrabold font-family-arial'>
+              <h1 className='text-white text-3xl sm:text-4xl font-extrabold font-family-arial'>
                   Dashboard Overview
               </h1>
 
@@ -38,7 +38,7 @@ export default function Navbar() {
           </button>
 
           {open && (
-            <div className='absolute right-0 top-full z-10 mt-2 min-w-[320px] max-w-[90vw] rounded-3xl bg-slate-950 border border-slate-800 p-5 shadow-2xl'>
+            <div className='absolute right-0 top-full z-10 mt-2 min-w-[280px] sm:min-w-[320px] max-w-[90vw] rounded-3xl bg-slate-950 border border-slate-800 p-5 shadow-2xl'>
               <div className='mb-4 text-slate-300 text-sm font-semibold uppercase tracking-wide'>Filter by date range</div>
               <div className='grid gap-4'>
                 <label className='text-slate-300 text-sm font-medium'>Start date</label>

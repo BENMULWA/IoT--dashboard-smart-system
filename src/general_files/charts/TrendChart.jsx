@@ -68,8 +68,6 @@ export default function TrendChart() {
 }
 
 */
-
-
 import {
   LineChart,
   Line,
@@ -78,178 +76,162 @@ import {
   Tooltip,
   CartesianGrid,
   ResponsiveContainer,
-  Legend
+  Legend,
 } from "recharts";
-
 import { useMemo, useState } from "react";
 
-const filterOptions = [
-  { value: "today", label: "Today", rangeMs: 1000 * 60 * 60 * 24 },
-  { value: "24h", label: "Last 24 Hours", rangeMs: 1000 * 60 * 60 * 24 },
-  { value: "week", label: "Last 7 Days", rangeMs: 1000 * 60 * 60 * 24 * 7 },
-  { value: "month", label: "Last 30 Days", rangeMs: 1000 * 60 * 60 * 24 * 30 },
+/* 🌍 ROOM DATA */
+const rooms = [
+  { name: "Lecture Hall", baseTemp: 28.6, baseHumidity: 62.4 },
+  { name: "Laboratory", baseTemp: 30.2, baseHumidity: 58.7 },
+  { name: "Outdoor", baseTemp: 32.8, baseHumidity: 54.1 },
+  { name: "Library", baseTemp: 25.4, baseHumidity: 66.8 },
+  { name: "Office", baseTemp: 27.5, baseHumidity: 61.2 },
+  { name: "Cafeteria", baseTemp: 29.7, baseHumidity: 64.5 },
 ];
 
-const rawData = (() => {
-  const now = new Date();
-  const samplePoints = [
-    { daysAgo: 0, hours: 8, temp: 28.5, humidity: 61 },
-    { daysAgo: 0, hours: 10, temp: 28.9, humidity: 62 },
-    { daysAgo: 0, hours: 12, temp: 29.3, humidity: 64 },
-    { daysAgo: 0, hours: 14, temp: 29.0, humidity: 63 },
-    { daysAgo: 0, hours: 18, temp: 28.7, humidity: 62 },
-    { daysAgo: 1, hours: 8, temp: 28.6, humidity: 62 },
-    { daysAgo: 1, hours: 10, temp: 28.9, humidity: 63 },
-    { daysAgo: 1, hours: 11, temp: 29.2, humidity: 64 },
-    { daysAgo: 1, hours: 14, temp: 29.0, humidity: 63 },
-    { daysAgo: 1, hours: 18, temp: 28.7, humidity: 62 },
-    { daysAgo: 2, hours: 8, temp: 28.5, humidity: 61 },
-    { daysAgo: 3, hours: 10, temp: 28.9, humidity: 62 },
-    { daysAgo: 4, hours: 12, temp: 29.3, humidity: 64 },
-    { daysAgo: 5, hours: 14, temp: 29.0, humidity: 63 },
-    { daysAgo: 6, hours: 18, temp: 28.7, humidity: 62 },
-    { daysAgo: 7, hours: 8, temp: 28.6, humidity: 62 },
-    { daysAgo: 10, hours: 10, temp: 28.9, humidity: 63 },
-    { daysAgo: 15, hours: 11, temp: 29.2, humidity: 64 },
-    { daysAgo: 20, hours: 14, temp: 29.0, humidity: 63 },
-    { daysAgo: 25, hours: 18, temp: 28.7, humidity: 62 },
-  ];
+/* 🌄 Generate mountain-style data */
+const generateWave = (room) => {
+  const data = [];
 
-  return samplePoints.map(({ daysAgo, hours, temp, humidity }) => {
-    const timestamp = new Date(now);
-    timestamp.setDate(now.getDate() - daysAgo);
-    timestamp.setHours(hours, 0, 0, 0);
-    return { timestamp, temp, humidity };
-  });
-})();
+  for (let i = 0; i < 30; i++) {
+    const wave = Math.sin(i * 0.5) * 3;
 
-function formatLabel(timestamp) {
-  const date = new Date(timestamp);
-  const hours = date.getHours().toString().padStart(2, "0");
-  const minutes = date.getMinutes().toString().padStart(2, "0");
-  const day = date.getDate();
-  const month = date.toLocaleString("default", { month: "short" });
-  return `${month} ${day} ${hours}:${minutes}`;
-}
+    data.push({
+      time: `T${i}`,
+      temp: Number((room.baseTemp + wave + Math.random()).toFixed(1)),
+      humidity: Number((room.baseHumidity + wave * 1.2 + Math.random()).toFixed(1)),
+    });
+  }
+
+  return data;
+};
 
 export default function TrendChart() {
-  const [filter, setFilter] = useState("week");
+  const [selected, setSelected] = useState(rooms[0]);
+  const [open, setOpen] = useState(false);
+  const [data, setData] = useState(generateWave(rooms[0]));
 
-  const filteredData = useMemo(() => {
-    const now = Date.now();
-    const selectedRange = filterOptions.find((option) => option.value === filter)?.rangeMs ?? 0;
-    const rawFiltered = rawData
-      .filter((item) => now - item.timestamp.getTime() <= selectedRange)
-      .sort((a, b) => a.timestamp - b.timestamp);
+  const handleSelect = (room) => {
+    setSelected(room);
+    setData(generateWave(room));
+    setOpen(false);
+  };
 
-    console.log('Filter:', filter, 'Range:', selectedRange, 'Filtered data length:', rawFiltered.length);
-
-    return rawFiltered.map((item) => ({
-      time: formatLabel(item.timestamp),
-      temp: item.temp,
-      humidity: item.humidity,
-    }));
-  }, [filter]);
-
+  /* 📊 ANALYTICS */
   const summary = useMemo(() => {
-    if (!filteredData.length) {
-      return {
-        avgTemp: "-",
-        avgHumidity: "-",
-        maxTemp: "-",
-        entries: 0,
-      };
-    }
+    const temps = data.map((d) => d.temp);
+    const hums = data.map((d) => d.humidity);
 
-    const totalTemp = filteredData.reduce((sum, item) => sum + item.temp, 0);
-    const totalHumidity = filteredData.reduce((sum, item) => sum + item.humidity, 0);
-    const maxTemp = Math.max(...filteredData.map((item) => item.temp));
     return {
-      avgTemp: (totalTemp / filteredData.length).toFixed(1),
-      avgHumidity: Math.round(totalHumidity / filteredData.length),
-      maxTemp: maxTemp.toFixed(1),
-      entries: filteredData.length,
+      avgTemp: (temps.reduce((a, b) => a + b, 0) / temps.length).toFixed(1),
+      avgHumidity: (hums.reduce((a, b) => a + b, 0) / hums.length).toFixed(1),
+      peakTemp: Math.max(...temps).toFixed(1),
     };
-  }, [filteredData]);
-
-  const selectLabel = filterOptions.find((option) => option.value === filter)?.label ?? "Today";
+  }, [data]);
 
   return (
-    <div className="bg-slate-900 rounded-2xl py-14 px-6 border border-slate-700 shadow-lg">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
-        <div className= "ml-4"> 
-          <h2 className="text-white text-lg font-semibold flex items-center gap-2">
-            <span className="w-3 h-3 rounded-full bg-purple-500 inline-block"></span>
-            Environmental Trends
+    <div className="bg-slate-900 p-4 rounded-2xl border border-slate-700 shadow-lg w-full">
+
+      {/* HEADER */}
+      <div className="flex justify-between items-center mb-4">
+
+        <div>
+          <h2 className="text-white text-lg font-semibold">
+            🌡️ Mountain Environmental Analysis
           </h2>
-          <p className="text-slate-400 text-sm mt-1">Showing data distribution for {selectLabel}</p>
+          <p className="text-slate-400 text-sm">
+            Room: {selected.name}
+          </p>
         </div>
 
-        <select
-          value={filter}
-          onChange={(e) => setFilter(e.target.value)}
-          className="bg-slate-800 text-white px-3 py-3 rounded-md border border-slate-700 focus:outline-none"
-        >
-          {filterOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
+        {/* DROPDOWN */}
+        <div className="relative w-44">
+
+          <button
+            onClick={() => setOpen(!open)}
+            className="bg-slate-800 text-white px-3 py-2 rounded-xl border border-slate-700 w-full flex justify-between"
+          >
+            {selected.name}
+            <span>▾</span>
+          </button>
+
+          {open && (
+            <div className="absolute top-full mt-2 w-full bg-slate-800 border border-slate-700 rounded-xl z-50">
+
+              {rooms.map((r) => (
+                <button
+                  key={r.name}
+                  onClick={() => handleSelect(r)}
+                  className="w-full text-left px-3 py-2 text-white hover:bg-slate-700"
+                >
+                  {r.name}
+                </button>
+              ))}
+
+            </div>
+          )}
+        </div>
+
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-        <div className="rounded-xl bg-slate-800 p-3">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Avg Temp</p>
-          <p className="text-white text-lg font-semibold">{summary.avgTemp}°C</p>
-        </div>
-        <div className="rounded-xl bg-slate-800 p-3">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Avg Humidity</p>
-          <p className="text-white text-lg font-semibold">{summary.avgHumidity}%</p>
-        </div>
-        <div className="rounded-xl bg-slate-800 p-3">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Peak Temp</p>
-          <p className="text-white text-lg font-semibold">{summary.maxTemp}°C</p>
-        </div>
-        <div className="rounded-xl bg-slate-800 p-3">
-          <p className="text-xs uppercase tracking-[0.2em] text-slate-500">Records</p>
-          <p className="text-white text-lg font-semibold">{summary.entries}</p>
-        </div>
+      {/* SUMMARY */}
+      <div className="grid grid-cols-3 gap-3 mb-4">
+        <Stat label="Avg Temp" value={`${summary.avgTemp}°C`} />
+        <Stat label="Avg Humidity" value={`${summary.avgHumidity}%`} />
+        <Stat label="Peak Temp" value={`${summary.peakTemp}°C`} />
       </div>
 
-      <div className="min-h-[320px]">
-        {filteredData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={320}>
-            <LineChart data={filteredData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-            <XAxis dataKey="time" stroke="#94a3b8" tick={{fontSize: 12}} />
-            <YAxis stroke="#94a3b8" />
-            <Tooltip contentStyle={{ backgroundColor: "#0f172a", borderColor: "#334155" }} />
-            <Legend wrapperStyle={{ color: "#94a3b8" }} />
-            <Line
-              type="monotone"
-              dataKey="temp"
-              stroke="#22c55e"
-              strokeWidth={3}
-              dot={{ r: 4 }}
-              name="Temperature °C"
-            />
-            <Line
-              type="monotone"
-              dataKey="humidity"
-              stroke="#3b82f6"
-              strokeWidth={3}
-              dot={{ r: 4 }}
-              name="Humidity %"
-            />
-              </LineChart>
+      {/* CHART WITH MOBILE SCROLL FIX */}
+      <div className="w-full overflow-x-auto">
+        <div className="min-w-[700px] sm:min-w-full h-[280px]">
+
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={data}>
+
+              <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
+
+              <XAxis dataKey="time" stroke="#94a3b8" />
+              <YAxis stroke="#94a3b8" />
+
+              <Tooltip />
+
+              <Legend />
+
+              {/*  TEMPERATURE MOUNTAIN CURVE */}
+              <Line
+                type="monotone"
+                dataKey="temp"
+                stroke="#22c55e"
+                strokeWidth={3}
+                dot={false}
+              />
+
+              {/* 💧 HUMIDITY MOUNTAIN CURVE */}
+              <Line
+                type="monotone"
+                dataKey="humidity"
+                stroke="#3b82f6"
+                strokeWidth={3}
+                dot={false}
+              />
+
+            </LineChart>
           </ResponsiveContainer>
-        ) : (
-          <div className="flex items-center justify-center h-full text-slate-400">
-            No data available for the selected time range
-          </div>
-        )}
+
+        </div>
       </div>
+
+    </div>
+  );
+}
+
+/* 📦 STAT CARD */
+function Stat({ label, value }) {
+  return (
+    <div className="bg-slate-800 p-3 rounded-xl">
+      <p className="text-xs text-slate-500 uppercase">{label}</p>
+      <p className="text-white font-semibold">{value}</p>
     </div>
   );
 }

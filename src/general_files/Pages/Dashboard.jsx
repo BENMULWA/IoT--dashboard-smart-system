@@ -31,10 +31,10 @@ export default function Dashboard() {
     <div className="flex flex-col lg:flex-row min-h-screen bg-transparent">
       <Sidebar />
 
-      <main className="flex-1 p-6 sm:p-8 space-y-6 pt-16 lg:pt-6">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 space-y-6 pt-12 sm:pt-16 lg:pt-6">
         <Navbar />
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-6 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
           <StatCard 
             title="Total Present Today" 
             value="128" 
@@ -97,14 +97,14 @@ export default function Dashboard() {
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
           <div className="lg:col-span-2">
             <TrendChart />
           </div>
           <DistributionChart todayAttendanceTotals={todayAttendanceTotals} />
         </div>
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           <div className="xl:col-span-2">
             <DataTable attendance={attendance} />
           </div>
@@ -113,40 +113,42 @@ export default function Dashboard() {
 
       {/* Footer for the dashboard */}
 
-        <footer className="mt-12 rounded-2xl bg-blue-400/5 backdrop-blur-xl border border-white/10 px-6 py-6 text-slate-400">
+        <footer className="mt-12 rounded-2xl bg-blue-400/5 backdrop-blur-xl border border-white/10 px-4 sm:px-6 py-5 text-slate-400">
 
-          <div className="flex flex-col items-center text-center md:flex-row md:items-center md:justify-between gap-3">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-center md:text-left">
 
-            {/* Left / Top on mobile */}
-
+            {/* LEFT / TOP */}
             <div className="flex items-center gap-2 justify-center md:justify-start">
 
               <span className="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse"></span>
 
-              <span className="text-sm sm:text-base font-medium text-blue-400 truncate">
+              <span className="text-sm sm:text-base font-medium text-blue-400">
                 IoT Dashboard System • Designed by Benard Mulwa
               </span>
 
             </div>
 
-            {/* Center */}
-            <div className="text-lg sm:text-base text-blue-400">
-              Smart Attendance  • Environment Monitoring • IoT Analytics
+            {/* CENTER (FIXED WRAP ISSUE) */}
+            <div className="text-xs sm:text-sm md:text-base text-blue-400 text-center leading-relaxed max-w-xs sm:max-w-sm">
+              Smart Attendance • Environment Monitoring • IoT Analytics
             </div>
 
-            {/* Right / Bottom on mobile */}
-            <div className="flex flex-col md:flex-row items-center gap-2 text-xs justify-center md:justify-end">
-              <span className="px-3 py-3 rounded-full bg-green-500/10 text-green-400 border border-green-500/20">
+            {/* RIGHT */}
+            <div className="flex flex-col sm:flex-row items-center gap-2 text-xs">
+
+              <span className="px-3 py-1 rounded-full bg-green-500/10 text-green-400 border border-green-500/20 whitespace-nowrap">
                 System Online
               </span>
+
               <span className="text-xs text-blue-400">
                 © {new Date().getFullYear()} All rights reserved
               </span>
+
             </div>
 
           </div>
+
         </footer>
-    
 
 
         {/* Footer for the dashboard */}
